@@ -1,30 +1,30 @@
 # Paper Toss
 
-Hand-tracked paper toss game. Pick up a sheet, crumple it, swing, release into the bin.
+Pick up a sheet of paper, crush it in your fist and toss it into the bin. Your webcam tracks your hand (MediaPipe Hand Landmarker), all on-device.
 
-## Run it
-The camera only works over https or localhost.
-- **Local:** `python3 -m http.server 8000` in this folder, then open http://localhost:8000
-- **GitHub Pages:** push these files to a repo, enable Pages on the main branch, open the link.
+**Play:** https://ashurana0153.github.io/paper-toss/
 
-Hand tracking loads MediaPipe from jsDelivr and its model from Google storage, so it needs internet on first load.
-"Mouse or touch" mode works with no camera.
+## How it plays
+1. **Pick** – hold an open hand over the paper pile (or pinch it).
+2. **Crush** – make a fist.
+3. **Throw** – swing toward the bin and open your hand while the power meter is in the green "Throw here" band.
 
-## Controls
-1. Open hand over the paper pile until the ring fills
-2. Fist to crumple
-3. Swing toward the bin, open your hand when the power bar is in the green band
-4. Wind: ribbons on the ceiling vent show it. Swing slightly against it.
+3 levels, 5 throws each. The bin moves further back every level. Hits score your current streak (1, 2, 3...), and you need 5 points to clear a level. A short practice throw sets the power meter to your arm.
 
-Mouse/touch: hover the pile, hold to crumple, flick, let go.
+No camera? Choose "Play with mouse or touch": press and hold to crush, flick and release to throw.
 
-## Files
-- `physics.js` ball flight, rim and bin collisions, power window per distance
-- `render.js` office scene, bin, paper, desk (canvas)
-- `input.js` MediaPipe hand source and mouse source
-- `ui.js` HUD, toasts, cards, sounds
-- `game.js` levels, scoring, gesture state machine
+## Run locally
+Needs a static server (camera and ES modules do not work from `file://`):
 
-## Tuning
-- `game.js`: `LEVELS` (wind, distance, bin offset), `NEED` baskets per level, `DEFAULT_VMAX` swing speed used when practice is skipped
-- `physics.js`: `TUNE` launch constants
+    npx serve .        # or: python3 -m http.server
+
+## Structure
+- `js/hands.js` camera + MediaPipe tracking, One Euro smoothing, mouse fallback
+- `js/gestures.js` pick / crush / release state machine and swing speed
+- `js/power.js` speed → power → landing distance
+- `js/game.js` levels, throw physics, scoring
+- `js/scene.js`, `js/paper.js` canvas office scene and paper drawing
+- `js/ui.js`, `js/demos.js`, `style.css` liquid-glass UI and how-to animations
+- `js/audio.js` synthesized sounds (no asset files)
+
+Inspired by the interaction design of shaivybhatia-afk/paper-throw; this is an independent implementation.

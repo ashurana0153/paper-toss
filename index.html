@@ -4,47 +4,140 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Paper Toss</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Familjen+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<meta name="description" content="Crush a sheet of paper and toss it into the bin. A webcam game that follows your hand, right in the browser.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M14 22h36l-4 34H18z' fill='%235a669f'/%3E%3Cellipse cx='32' cy='22' rx='18' ry='6' fill='%23e6eafb'/%3E%3Cellipse cx='32' cy='22' rx='14' ry='4' fill='%23161b3b'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css?v=1">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 </head>
 <body>
-<main id="app">
-  <canvas id="scene" aria-label="Office with a wastebasket to aim at"></canvas>
+<canvas id="stage"></canvas>
 
-  <header class="hud" id="hud" hidden>
-    <div class="chip"><span class="k">Level</span> <b id="lvl">1</b> of 3</div>
-    <div class="stat"><span class="k">Score</span><b id="score">0</b></div>
-    <div class="stat"><span class="k">Streak</span><b id="streak">0</b></div>
-    <div class="stat"><span class="k">This level</span><b id="prog">0 / 5</b></div>
-    <div class="chip wind" id="wind"><span id="windLabel">Calm</span> <span id="windVal" class="mono"></span></div>
-  </header>
+<div id="pip" class="away" hidden>
+  <video id="cam" playsinline muted></video>
+  <canvas id="pipHands"></canvas>
+  <span>Your camera</span>
+</div>
 
-  <aside class="meter" id="meter" hidden aria-label="Throw power">
-    <div class="track">
-      <div class="band" id="band"></div>
-      <div class="fill" id="fill"></div>
+<section id="landing" class="screen active">
+  <div class="card glass hero">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 64 64" width="44" height="44"><path d="M14 24h36l-4 32H18z" fill="#5a669f"/><path d="M20 24l3 32M32 24v32M44 24l-3 32" stroke="#fff" stroke-opacity=".25" stroke-width="2"/><ellipse cx="32" cy="24" rx="18" ry="6" fill="#e6eafb"/><ellipse cx="32" cy="24" rx="14" ry="4" fill="#161b3b"/><circle cx="26" cy="18" r="6" fill="#fff" stroke="#9aa5d8" stroke-width="1.5"/></svg>
     </div>
-    <span class="k">Power</span>
-  </aside>
+    <h1>Paper Toss</h1>
+    <p class="lead">Pick up a sheet, crush it in your fist and toss it into the bin. Your webcam follows your hand.</p>
+    <button id="btnStart" class="btn primary big">Start</button>
+    <button id="btnMouse" class="link">No camera? Play with mouse or touch</button>
+    <p class="privacy">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      <span>The camera is used on this device only. Nothing is recorded or uploaded.</span>
+    </p>
+  </div>
+</section>
 
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<section id="instructions" class="screen">
+  <div class="card glass wide">
+    <h2>How to play</h2>
+    <div class="moves">
+      <figure class="glass"><canvas data-demo="pick"></canvas><figcaption><b>Pick</b> Hold an open hand over the paper pile.</figcaption></figure>
+      <figure class="glass"><canvas data-demo="crush"></canvas><figcaption><b>Crush</b> Make a fist.</figcaption></figure>
+      <figure class="glass"><canvas data-demo="throw"></canvas><figcaption><b>Throw</b> Swing toward the bin and open your hand in the green band.</figcaption></figure>
+    </div>
+    <p class="tip glass">Use one hand. Sit back so your whole hand fits in the camera view.</p>
+    <button id="btnContinue" class="btn primary big" disabled>Getting the camera ready...</button>
+  </div>
+</section>
 
-  <section class="cam" id="camBox" hidden>
-    <video id="video" playsinline muted></video>
-    <canvas id="skel"></canvas>
-    <span class="mono" id="hw">0.0</span>
-  </section>
+<section id="error" class="screen">
+  <div class="card glass">
+    <h2>Camera not available</h2>
+    <p id="errorText" class="lead"></p>
+    <div class="row">
+      <button id="btnRetryCam" class="btn primary">Try again</button>
+      <button id="btnErrMouse" class="btn">Use mouse or touch</button>
+    </div>
+  </div>
+</section>
 
-  <button class="link" id="howBtn" hidden>How to play?</button>
-  <div class="overlay" id="overlay"></div>
-</main>
+<section id="calib" class="screen top">
+  <div id="calibIntro" class="card glass slim">
+    <h2>Let's do a practice throw</h2>
+    <p class="lead">It is a warm-up with no paper and no score.</p>
+    <p class="lead">It sets the power meter to your arm.</p>
+    <button id="btnCalibGo" class="btn primary">Start practice throw</button>
+    <div><button id="btnSkipCalib" class="link">Skip and use a standard power setting</button></div>
+  </div>
+  <div id="calibRun" class="card glass slim" hidden>
+    <h2>Practice throw</h2>
+    <ol class="steps">
+      <li><b>1</b> Make a fist as if holding paper</li>
+      <li><b>2</b> Swing toward the screen</li>
+      <li><b>3</b> Open your hand to let go</li>
+    </ol>
+    <div id="calibCam" class="cam-slot"></div>
+    <p id="calibText" class="small">Your hand shows in the box once the camera sees it.</p>
+    <div class="gauge"><div id="calibFill"></div></div>
+    <p class="gauge-read"><b id="calibValue">0.0</b> hand widths per second</p>
+    <div id="calibButtons" class="row" hidden>
+      <button id="btnCalibRetry" class="btn">Throw again</button>
+      <button id="btnPlay" class="btn primary">Start playing</button>
+    </div>
+    <div><button id="btnCalibBack" class="link">Back</button></div>
+  </div>
+</section>
 
-<script src="physics.js"></script>
-<script src="render.js"></script>
-<script src="input.js"></script>
-<script src="ui.js"></script>
-<script src="game.js"></script>
+<section id="hud" class="screen hud">
+  <div class="hud-tl">
+    <div class="glass chip"><span>Level</span><b id="hLevel">1</b><span>of <span id="hLevels">3</span></span></div>
+    <div id="hThrows" class="glass throws"><span id="hThrowText">Throw 1 of 5</span><span id="hDots" class="dots"></span></div>
+  </div>
+  <div class="hud-tr">
+    <div class="glass stat"><span>Score</span><b id="hScore">0</b></div>
+    <div id="hStreakBox" class="glass stat streak"><span>Streak</span><b id="hStreak">0</b></div>
+    <div id="hLevelBox" class="glass stat"><span>This level</span><b><span id="hLevelScore">0</span><small> / <span id="hGoal">5</span></small></b></div>
+  </div>
+  <div id="hWind" class="glass wind" hidden>
+    <svg viewBox="0 0 60 20" width="42" height="14" aria-hidden="true"><path id="hWindArrow" d="M2 10h50M42 3l10 7-10 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span id="hWindText">Calm, no wind</span>
+  </div>
+  <div class="meter" aria-label="Power">
+    <div class="meter-track glass">
+      <div id="hZone" class="meter-zone"></div>
+      <div id="hMeter" class="meter-fill"></div>
+      <span id="hZoneLabel" class="zone-label">Throw here</span>
+    </div>
+    <div class="meter-title">Power</div>
+  </div>
+  <div id="hPick" class="pick-hint" hidden>Pick your paper from here</div>
+  <button id="btnHowTo" class="glass howto">How to play?</button>
+  <div id="hPrompt" class="glass prompt"></div>
+  <div id="hToast" class="toast" role="status" aria-live="polite"></div>
+</section>
+
+<section id="levelEnd" class="screen dim">
+  <div class="card glass">
+    <h2 id="leTitle">Level 1 cleared</h2>
+    <p id="leText" class="lead"></p>
+    <div class="row">
+      <button id="leSecondary" class="btn">Finish here</button>
+      <button id="lePrimary" class="btn primary hold">Next level</button>
+    </div>
+    <p class="small">Or hold up an open hand to carry on.</p>
+  </div>
+</section>
+
+<section id="final" class="screen dim">
+  <div class="card glass">
+    <h2>Final score</h2>
+    <div id="fScore" class="big-score">0</div>
+    <p id="fText" class="lead"></p>
+    <div class="row">
+      <button id="btnShare" class="btn">Share score</button>
+      <button id="btnAgain" class="btn primary hold">Play again</button>
+    </div>
+    <button id="btnRecal" class="link">Redo the practice throw</button>
+  </div>
+</section>
+
+<script type="module" src="js/main.js?v=1"></script>
 </body>
 </html>
