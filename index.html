@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Paper Toss</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Familjen+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="app">
+  <canvas id="scene" aria-label="Office with a wastebasket to aim at"></canvas>
+
+  <header class="hud" id="hud" hidden>
+    <div class="chip"><span class="k">Level</span> <b id="lvl">1</b> of 3</div>
+    <div class="stat"><span class="k">Score</span><b id="score">0</b></div>
+    <div class="stat"><span class="k">Streak</span><b id="streak">0</b></div>
+    <div class="stat"><span class="k">This level</span><b id="prog">0 / 5</b></div>
+    <div class="chip wind" id="wind"><span id="windLabel">Calm</span> <span id="windVal" class="mono"></span></div>
+  </header>
+
+  <aside class="meter" id="meter" hidden aria-label="Throw power">
+    <div class="track">
+      <div class="band" id="band"></div>
+      <div class="fill" id="fill"></div>
+    </div>
+    <span class="k">Power</span>
+  </aside>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <section class="cam" id="camBox" hidden>
+    <video id="video" playsinline muted></video>
+    <canvas id="skel"></canvas>
+    <span class="mono" id="hw">0.0</span>
+  </section>
+
+  <button class="link" id="howBtn" hidden>How to play?</button>
+  <div class="overlay" id="overlay"></div>
+</main>
+
+<script src="physics.js"></script>
+<script src="render.js"></script>
+<script src="input.js"></script>
+<script src="ui.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
