@@ -12,6 +12,9 @@ const store = {
   set(k, v) { try { localStorage.setItem(`paperToss.${k}`, String(v)); } catch (e) {} },
 };
 const stage = new Stage($('stage')), audio = new Sound(), hands = new Hands();
+// Optional artwork: drop assets/img/office.jpg and assets/img/bin.png in the repo to replace the drawn scene and bin.
+const tryImage = (srcs) => new Promise((res) => { const next = (i) => { if (i >= srcs.length) return res(null); const im = new Image(); im.onload = () => res(im); im.onerror = () => next(i + 1); im.src = srcs[i]; }; next(0); });
+Promise.all([tryImage(['assets/img/office.jpg']), tryImage(['assets/img/bin.png'])]).then(([office, bin]) => { if (office || bin) stage.setImages({ office, bin }); });
 let calMax = +store.get('calMax') || null, best = +store.get('best') || 0, returnToGame = false, calib = { peak: 0, done: false };
 const MOUSE_MAX = 26; // hand sizes per second that a firm mouse flick reaches
 
