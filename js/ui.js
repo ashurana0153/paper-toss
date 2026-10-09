@@ -41,7 +41,7 @@ export const UI = {
     if (lo == null) { z.hidden = true; l.hidden = true; return; }
     z.hidden = false; l.hidden = false;
     z.style.bottom = `calc(5px + (100% - 10px) * ${lo})`; z.style.height = `calc((100% - 10px) * ${hi - lo})`;
-    l.style.bottom = `calc(5px + (100% - 10px) * ${(lo + hi) / 2} - 14px)`;
+    l.style.bottom = `calc(5px + (100% - 10px) * ${(lo + hi) / 2})`;
   },
   wind(w, max) {
     const el = $('hWind'); if (w == null) { el.hidden = true; return; }

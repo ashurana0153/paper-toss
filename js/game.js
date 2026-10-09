@@ -168,7 +168,7 @@ export class Game {
     else if (g.state === 'holding') key = g.squeezing ? 'crumpling' : 'got';
     else key = g.armed ? 'swing' : 'grip';
     this.ui.prompt((this.pointer && PROMPTS_POINTER[key]) || PROMPTS[key]);
-    if (g.state === 'idle' && !g.hover && this.throwIdx === 0) { const p = this.stage.pile(); this.ui.pickHint(p.x, p.y - p.w * 0.95); } else this.ui.pickHint(null);
+    if (g.state === 'idle' && !g.hover && this.throwIdx === 0) { const p = this.stage.pile(); this.ui.pickHint(p.x, p.y - p.w * 0.5); } else this.ui.pickHint(null);
   }
 
   // ---------- drawing ----------

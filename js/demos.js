@@ -14,11 +14,13 @@ function prep(cv) {
   return { c, w, h };
 }
 function bin(c, x, y, s) {
-  const g = c.createLinearGradient(x - s, 0, x + s, 0);
-  g.addColorStop(0, 'rgba(255,255,255,0.6)'); g.addColorStop(0.2, 'rgba(210,225,255,0.2)'); g.addColorStop(0.5, 'rgba(190,210,255,0.08)'); g.addColorStop(1, 'rgba(255,255,255,0.5)');
-  c.beginPath(); c.moveTo(x - s, y - s * 0.9); c.lineTo(x - s * 0.78, y + s * 0.5); c.ellipse(x, y + s * 0.5, s * 0.78, s * 0.2, 0, Math.PI, 0, true); c.lineTo(x + s, y - s * 0.9); c.ellipse(x, y - s * 0.9, s, s * 0.28, 0, 0, Math.PI, false); c.closePath();
-  c.fillStyle = g; c.fill(); c.strokeStyle = 'rgba(255,255,255,0.85)'; c.lineWidth = 2; c.stroke();
-  c.beginPath(); c.ellipse(x, y - s * 0.9, s, s * 0.28, 0, Math.PI, 6.2832); c.strokeStyle = 'rgba(255,255,255,0.7)'; c.stroke();
+  c.save(); c.beginPath(); c.moveTo(x - s, y - s * 0.9); c.lineTo(x - s * 0.78, y + s * 0.5); c.ellipse(x, y + s * 0.5, s * 0.78, s * 0.2, 0, Math.PI, 0, true); c.lineTo(x + s, y - s * 0.9); c.ellipse(x, y - s * 0.9, s, s * 0.28, 0, 0, Math.PI, false); c.closePath();
+  c.fillStyle = 'rgba(50,60,90,0.12)'; c.fill(); c.clip();
+  c.strokeStyle = 'rgba(40,48,72,0.7)'; c.lineWidth = 1.2;
+  for (let i = -8; i <= 8; i++) { c.beginPath(); c.moveTo(x + i * s * 0.25 - s, y - s); c.lineTo(x + i * s * 0.25 + s * 0.4, y + s * 0.7); c.moveTo(x + i * s * 0.25 + s, y - s); c.lineTo(x + i * s * 0.25 - s * 0.4, y + s * 0.7); c.stroke(); }
+  c.restore();
+  c.strokeStyle = '#464f68'; c.lineWidth = 4; c.beginPath(); c.ellipse(x, y - s * 0.9, s, s * 0.28, 0, 0, 6.2832); c.stroke();
+  c.strokeStyle = 'rgba(190,200,226,0.7)'; c.lineWidth = 1.2; c.beginPath(); c.ellipse(x, y - s * 0.9, s, s * 0.28, 0, 0.2, Math.PI - 0.2); c.stroke();
 }
 const DEMOS = {
   pick(c, w, h, t) {
