@@ -5,6 +5,7 @@ import { Game } from './game.js';
 import { Sound } from './audio.js';
 import { UI } from './ui.js';
 import { drawDemos } from './demos.js';
+import './music.js';
 
 const $ = UI.$;
 const store = {

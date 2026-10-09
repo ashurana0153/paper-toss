@@ -8,7 +8,7 @@ export const UI = {
   screen: 'landing',
   show(id) {
     document.querySelectorAll('.screen').forEach((s) => s.classList.toggle('active', s.id === id));
-    this.screen = id;
+    this.screen = id; document.body.dataset.screen = id;
   },
 
   // ---------- HUD ----------
