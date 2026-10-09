@@ -19,7 +19,7 @@ export class Stage {
   k(z) { return this.F / (z + WORLD.plane); }
   proj(X, Y, Z) { const k = this.k(Z); return { x: this.cx + X * k, y: this.hy + (WORLD.eye - Y) * k, k }; }
   unproj(sx, sy, Z = 0) { const k = this.k(Z); return { X: (sx - this.cx) / k, Y: WORLD.eye - (sy - this.hy) / k }; }
-  pile() { const w = Math.max(100, 0.12 * this.W); return { w, x: Math.min(0.84 * this.W, this.W - 0.75 * w), y: Math.min(0.8 * this.H, this.H - 60) }; }
+  pile() { const w = Math.max(100, 0.12 * this.W); return { w, x: Math.min(0.875 * this.W, this.W - 0.6 * w), y: Math.min(0.8 * this.H, this.H - 60) }; }
 
   // ----- the office, drawn once per resize: a bright open-plan floor with a glass wall, pillars, desks and sun shafts -----
   setImages({ office, bin } = {}) { this.officeImg = office || null; this.binImg = bin || null; this.buildBackground(); }
@@ -64,15 +64,14 @@ export class Stage {
   }
   // A supplied photo or render: cover-fit, with a soft desk plate so the paper pile reads.
   paintImage(g) {
-    const { W, H } = this, im = this.officeImg, s = Math.max(W / im.naturalWidth, H / im.naturalHeight), w = im.naturalWidth * s, h = im.naturalHeight * s;
-    g.drawImage(im, (W - w) / 2, -(h - H) * 0.62, w, h); // crop more of the ceiling than the floor
-    // tone it into the game: calmer highlights, a cool wash, darker top and bottom edges for the HUD
-    g.fillStyle = 'rgba(40,56,120,0.16)'; g.fillRect(0, 0, W, H);
-    let tg = g.createLinearGradient(0, 0, 0, H * 0.3); tg.addColorStop(0, 'rgba(14,20,56,0.38)'); tg.addColorStop(1, 'rgba(14,20,56,0)'); g.fillStyle = tg; g.fillRect(0, 0, W, H * 0.3);
-    tg = g.createLinearGradient(0, H * 0.7, 0, H); tg.addColorStop(0, 'rgba(14,20,56,0)'); tg.addColorStop(1, 'rgba(14,20,56,0.28)'); g.fillStyle = tg; g.fillRect(0, H * 0.7, W, H * 0.3);
-    const p = this.pile(), dx0 = p.x - p.w * 2.3, dy0 = p.y - p.w * 1.15;
-    g.save(); g.shadowColor = 'rgba(14,20,60,0.45)'; g.shadowBlur = 34; g.shadowOffsetY = 10; const gr = g.createLinearGradient(0, dy0, 0, H); gr.addColorStop(0, '#e9b98a'); gr.addColorStop(1, '#c58f5e'); g.fillStyle = gr; g.beginPath(); g.roundRect(dx0, dy0, W - dx0 + 60, H - dy0 + 60, 34); g.fill(); g.restore();
-    this.wood(g, dx0, dy0, W - dx0, H - dy0, 3);
+    const { W, H, hy } = this, im = this.officeImg, sc = Math.max(W / im.naturalWidth, H / im.naturalHeight), w = im.naturalWidth * sc, h = im.naturalHeight * sc;
+    // line the picture's floor line up with the game's horizon, as far as the crop allows
+    const offY = Math.min(0, Math.max(H - h, hy - 0.465 * h)), offX = (W - w) / 2;
+    g.drawImage(im, offX, offY, w, h);
+    // keep the HUD readable: a little shade at the top and a soft pool of shade under the paper pile
+    let tg = g.createLinearGradient(0, 0, 0, H * 0.22); tg.addColorStop(0, 'rgba(14,20,56,0.28)'); tg.addColorStop(1, 'rgba(14,20,56,0)'); g.fillStyle = tg; g.fillRect(0, 0, W, H * 0.22);
+    const p = this.pile(), sg = g.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.w * 1.5); sg.addColorStop(0, 'rgba(40,24,10,0.28)'); sg.addColorStop(1, 'rgba(40,24,10,0)');
+    g.save(); g.translate(p.x, p.y); g.scale(1.3, 0.8); g.translate(-p.x, -p.y); g.fillStyle = sg; g.beginPath(); g.arc(p.x, p.y, p.w * 1.5, 0, 6.2832); g.fill(); g.restore();
   }
   paintScene(g) { paintOffice(g, this); }
   drawBackground() { this.ctx.drawImage(this.bg, 0, 0, this.W, this.H); }
