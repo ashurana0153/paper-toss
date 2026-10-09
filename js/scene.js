@@ -64,7 +64,11 @@ export class Stage {
   // A supplied photo or render: cover-fit, with a soft desk plate so the paper pile reads.
   paintImage(g) {
     const { W, H } = this, im = this.officeImg, s = Math.max(W / im.naturalWidth, H / im.naturalHeight), w = im.naturalWidth * s, h = im.naturalHeight * s;
-    g.drawImage(im, (W - w) / 2, (H - h) / 2, w, h);
+    g.drawImage(im, (W - w) / 2, -(h - H) * 0.62, w, h); // crop more of the ceiling than the floor
+    // tone it into the game: calmer highlights, a cool wash, darker top and bottom edges for the HUD
+    g.fillStyle = 'rgba(40,56,120,0.16)'; g.fillRect(0, 0, W, H);
+    let tg = g.createLinearGradient(0, 0, 0, H * 0.3); tg.addColorStop(0, 'rgba(14,20,56,0.38)'); tg.addColorStop(1, 'rgba(14,20,56,0)'); g.fillStyle = tg; g.fillRect(0, 0, W, H * 0.3);
+    tg = g.createLinearGradient(0, H * 0.7, 0, H); tg.addColorStop(0, 'rgba(14,20,56,0)'); tg.addColorStop(1, 'rgba(14,20,56,0.28)'); g.fillStyle = tg; g.fillRect(0, H * 0.7, W, H * 0.3);
     const p = this.pile(), dx0 = p.x - p.w * 2.3, dy0 = p.y - p.w * 1.15;
     g.save(); g.shadowColor = 'rgba(14,20,60,0.45)'; g.shadowBlur = 34; g.shadowOffsetY = 10; const gr = g.createLinearGradient(0, dy0, 0, H); gr.addColorStop(0, '#e9b98a'); gr.addColorStop(1, '#c58f5e'); g.fillStyle = gr; g.beginPath(); g.roundRect(dx0, dy0, W - dx0 + 60, H - dy0 + 60, 34); g.fill(); g.restore();
     this.wood(g, dx0, dy0, W - dx0, H - dy0, 3);
