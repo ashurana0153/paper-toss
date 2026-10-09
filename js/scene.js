@@ -96,29 +96,50 @@ export class Stage {
     const baseTilt = WORLD.eye / Math.hypot(z + WORLD.plane, WORLD.eye);
     return { base, top, rx: r * k, ry: r * k * tilt, bx: r * 0.78 * k, by: r * 0.78 * k * baseTilt, k };
   }
-  // Interior and back rim, plus its floor shadow. Balls that fell in are drawn after this and before binFront.
-  binBack(z, inside) {
-    const c = this.ctx, g = this.binGeom(z);
-    const sg = c.createRadialGradient(g.base.x, g.base.y, 1, g.base.x, g.base.y, g.rx * 0.7); sg.addColorStop(0, 'rgba(20,26,64,0.45)'); sg.addColorStop(1, 'rgba(20,26,64,0)');
-    c.save(); c.translate(g.base.x, g.base.y); c.scale(1, 0.2 / 0.7); c.translate(-g.base.x, -g.base.y); c.fillStyle = sg; c.beginPath(); c.arc(g.base.x, g.base.y, g.rx * 0.7 * 1.0, 0, 6.28); c.fill(); c.restore();
-    c.beginPath(); c.ellipse(g.top.x, g.top.y, g.rx, g.ry, 0, 0, 6.2832);
-    const ig = c.createLinearGradient(0, g.top.y - g.ry, 0, g.top.y + g.ry); ig.addColorStop(0, '#59639a'); ig.addColorStop(1, '#161b3b'); c.fillStyle = ig; c.fill();
-    inside && inside(g);
-  }
-  binFront(z) {
-    const c = this.ctx, g = this.binGeom(z);
+  // Glass bin. binBack = floor shadow, back wall, bottom and back rim; balls that fell in are drawn after it, then binFront (the clear front wall).
+  binBody(g) {
+    const c = this.ctx;
     c.beginPath(); c.moveTo(g.top.x - g.rx, g.top.y); c.lineTo(g.base.x - g.bx, g.base.y);
     c.ellipse(g.base.x, g.base.y, g.bx, g.by, 0, Math.PI, 0, true); c.lineTo(g.top.x + g.rx, g.top.y);
     c.ellipse(g.top.x, g.top.y, g.rx, g.ry, 0, 0, Math.PI, false); c.closePath();
+  }
+  binBack(z, inside) {
+    const c = this.ctx, g = this.binGeom(z), h = g.base.y - g.top.y;
+    // soft shadow on the desk floor
+    const sg = c.createRadialGradient(g.base.x, g.base.y, 1, g.base.x, g.base.y, g.rx * 0.7); sg.addColorStop(0, 'rgba(20,26,64,0.28)'); sg.addColorStop(1, 'rgba(20,26,64,0)');
+    c.save(); c.translate(g.base.x, g.base.y); c.scale(1, 0.2 / 0.7); c.translate(-g.base.x, -g.base.y); c.fillStyle = sg; c.beginPath(); c.arc(g.base.x, g.base.y, g.rx * 0.7, 0, 6.28); c.fill(); c.restore();
+    // back wall: a faint tinted pane seen through the mouth and the glass
+    c.beginPath(); c.moveTo(g.top.x - g.rx, g.top.y); c.lineTo(g.base.x - g.bx, g.base.y); c.ellipse(g.base.x, g.base.y, g.bx, g.by, 0, Math.PI, 0, true); c.lineTo(g.top.x + g.rx, g.top.y); c.ellipse(g.top.x, g.top.y, g.rx, g.ry, 0, 0, 6.2832, true); c.closePath();
+    const wg = c.createLinearGradient(0, g.top.y - g.ry, 0, g.base.y + g.by); wg.addColorStop(0, 'rgba(255,255,255,0.10)'); wg.addColorStop(1, 'rgba(150,175,255,0.24)'); c.fillStyle = wg; c.fill();
+    // thick glass bottom
+    c.beginPath(); c.ellipse(g.base.x, g.base.y, g.bx, g.by, 0, 0, 6.2832); c.fillStyle = 'rgba(170,195,255,0.30)'; c.fill();
+    c.lineWidth = Math.max(1, g.k * 0.02); c.strokeStyle = 'rgba(255,255,255,0.45)'; c.stroke();
+    // back half of the rim
+    c.beginPath(); c.ellipse(g.top.x, g.top.y, g.rx, g.ry, 0, Math.PI, 6.2832, false); c.strokeStyle = 'rgba(255,255,255,0.6)'; c.lineWidth = Math.max(2, g.k * 0.03); c.stroke();
+    inside && inside(g);
+  }
+  binFront(z) {
+    const c = this.ctx, g = this.binGeom(z), lw = Math.max(1.5, g.k * 0.03);
+    this.binBody(g);
+    // glass body: bright at the edges, nearly clear in the middle
     const bg = c.createLinearGradient(g.top.x - g.rx, 0, g.top.x + g.rx, 0);
-    bg.addColorStop(0, '#3a4474'); bg.addColorStop(0.3, '#7683bd'); bg.addColorStop(0.55, '#5a669f'); bg.addColorStop(1, '#2c3562');
+    bg.addColorStop(0, 'rgba(255,255,255,0.42)'); bg.addColorStop(0.18, 'rgba(210,225,255,0.14)'); bg.addColorStop(0.5, 'rgba(190,210,255,0.05)'); bg.addColorStop(0.85, 'rgba(210,225,255,0.14)'); bg.addColorStop(1, 'rgba(255,255,255,0.36)');
     c.fillStyle = bg; c.fill();
-    c.save(); c.clip(); c.strokeStyle = 'rgba(255,255,255,0.12)'; c.lineWidth = Math.max(1, g.k * 0.012);
-    for (let i = -4; i <= 4; i++) { const t = i / 4.5; c.beginPath(); c.moveTo(g.top.x + t * g.rx, g.top.y); c.lineTo(g.base.x + t * g.bx, g.base.y); c.stroke(); }
+    c.save(); c.clip();
+    const vg = c.createLinearGradient(0, g.top.y, 0, g.base.y + g.by); vg.addColorStop(0, 'rgba(255,255,255,0)'); vg.addColorStop(1, 'rgba(120,150,255,0.20)'); c.fillStyle = vg; c.fillRect(g.top.x - g.rx - 4, g.top.y, g.rx * 2 + 8, g.base.y - g.top.y + g.by + 4);
+    // specular streaks
+    const sx = g.top.x - g.rx * 0.52, ex = g.base.x - g.bx * 0.52, w1 = g.rx * 0.14;
+    const sp = c.createLinearGradient(0, g.top.y, 0, g.base.y); sp.addColorStop(0, 'rgba(255,255,255,0.55)'); sp.addColorStop(1, 'rgba(255,255,255,0.06)');
+    c.fillStyle = sp; c.beginPath(); c.moveTo(sx, g.top.y + g.ry * 0.5); c.lineTo(sx + w1, g.top.y + g.ry * 0.5); c.lineTo(ex + w1 * 0.8, g.base.y - g.by * 0.3); c.lineTo(ex, g.base.y - g.by * 0.3); c.closePath(); c.fill();
+    c.fillStyle = 'rgba(255,255,255,0.22)'; const rx2 = g.top.x + g.rx * 0.6, ex2 = g.base.x + g.bx * 0.6; c.beginPath(); c.moveTo(rx2, g.top.y + g.ry * 0.6); c.lineTo(rx2 + w1 * 0.5, g.top.y + g.ry * 0.6); c.lineTo(ex2 + w1 * 0.4, g.base.y - g.by * 0.3); c.lineTo(ex2, g.base.y - g.by * 0.3); c.closePath(); c.fill();
     c.restore();
-    c.beginPath(); c.ellipse(g.top.x, g.top.y, g.rx, g.ry, 0, 0, Math.PI, false);
-    c.strokeStyle = '#e6eafb'; c.lineWidth = Math.max(2, g.k * 0.035); c.stroke();
-    c.beginPath(); c.ellipse(g.top.x, g.top.y, g.rx, g.ry, 0, Math.PI, 6.2832, false); c.strokeStyle = '#c4cbea'; c.stroke();
+    // side edges
+    c.strokeStyle = 'rgba(255,255,255,0.7)'; c.lineWidth = lw * 0.8;
+    c.beginPath(); c.moveTo(g.top.x - g.rx, g.top.y); c.lineTo(g.base.x - g.bx, g.base.y); c.moveTo(g.top.x + g.rx, g.top.y); c.lineTo(g.base.x + g.bx, g.base.y); c.stroke();
+    // front of the base and the rim, with a thin inner line for glass thickness
+    c.beginPath(); c.ellipse(g.base.x, g.base.y, g.bx, g.by, 0, 0, Math.PI, false); c.strokeStyle = 'rgba(255,255,255,0.65)'; c.lineWidth = lw * 0.9; c.stroke();
+    c.beginPath(); c.ellipse(g.top.x, g.top.y, g.rx, g.ry, 0, 0, Math.PI, false); c.strokeStyle = 'rgba(255,255,255,0.95)'; c.lineWidth = lw; c.stroke();
+    c.beginPath(); c.ellipse(g.top.x, g.top.y, g.rx * 0.95, g.ry * 0.9, 0, 0.05, Math.PI - 0.05, false); c.strokeStyle = 'rgba(160,185,255,0.45)'; c.lineWidth = lw * 0.6; c.stroke();
   }
   shadow(X, Z, r, a) {
     const c = this.ctx, p = this.proj(X, 0, Z), rr = r * p.k;

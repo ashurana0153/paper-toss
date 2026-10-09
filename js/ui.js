@@ -20,7 +20,7 @@ export const UI = {
   },
   hud(s) {
     $('hLevel').textContent = s.level; $('hLevels').textContent = s.levels;
-    this.bump($('hScore'), s.total); this.bump($('hStreak'), s.streak);
+    this.bump($('hScore'), s.total); this.bump($('hStreak'), s.streak); $('hStreakBox').classList.toggle('hot', s.streak >= 2);
     $('hLevelScore').textContent = s.levelScore; $('hGoal').textContent = s.goal;
     $('hThrowText').textContent = `Throw ${s.throwNum} of ${s.throws}`;
     $('hDots').innerHTML = Array.from({ length: s.throws }, (_, i) => `<i class="${i < s.results.length ? (s.results[i] ? 'hit' : 'miss') : i === s.idx ? 'now' : ''}"></i>`).join('');

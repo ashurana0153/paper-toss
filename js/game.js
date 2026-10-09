@@ -23,7 +23,7 @@ export class Game {
   constructor(stage, ui, audio) {
     this.stage = stage; this.ui = ui; this.audio = audio;
     this.mode = 'menu'; this.level = 0; this.total = 0; this.streak = 0; this.levelScore = 0; this.throwIdx = 0; this.results = [];
-    this.phase = 'ready'; this.ball = null; this.floorBalls = []; this.binBalls = 0; this.pickFlash = 0; this.nextAt = 0;
+    this.phase = 'ready'; this.ball = null; this.floorBalls = []; this.binBalls = 0; this.binList = []; this.pickFlash = 0; this.nextAt = 0;
     this.meterP = 0; this.meterHold = 0; this.wind = { w: 0, max: 0 }; this.streaks = [];
     this.hand = null; this.calibPeak = 0;
     this.gestures = new Gestures({
@@ -45,7 +45,7 @@ export class Game {
     this.mode = 'play'; this.total = 0; this.streak = 0; this.startLevel(0);
   }
   startLevel(i) {
-    this.level = i; this.levelScore = 0; this.throwIdx = 0; this.results = []; this.floorBalls = []; this.binBalls = 0; this.ball = null;
+    this.level = i; this.levelScore = 0; this.throwIdx = 0; this.results = []; this.floorBalls = []; this.binBalls = 0; this.binList = []; this.ball = null;
     this.newThrow();
   }
   newThrow() {
@@ -103,9 +103,15 @@ export class Game {
       }
       if (b.sunk) { // fall inside the bin
         const pull = Math.min(1, h * 6); b.vx -= (b.X - WORLD.binX) * pull * 2; b.vz -= (b.Z - L.z) * pull * 2; b.vx *= 0.98; b.vz *= 0.98;
-        const r = WORLD.binR - WORLD.ballR * 0.6, dd = Math.hypot(b.X - WORLD.binX, b.Z - L.z);
+        const rest = 0.11 + 0.15 * Math.floor(this.binBalls / 3);
+        const r = (0.78 + 0.22 * Math.min(1, b.Y / WORLD.rimY)) * WORLD.binR - WORLD.ballR * 0.7, dd = Math.hypot(b.X - WORLD.binX, b.Z - L.z);
         if (dd > r) { b.X = WORLD.binX + (b.X - WORLD.binX) * r / dd; b.Z = L.z + (b.Z - L.z) * r / dd; }
-        if (b.Y <= 0.12) { b.Y = 0.12; b.done = true; this.binBalls++; this.audio.thud(0.5); break; }
+        if (b.Y <= rest) {
+          b.Y = rest; b.done = true;
+          for (let k = 0; k < 6; k++) this.binList.forEach((o) => { if (Math.abs(o.Y - rest) < 0.05) { const ox = b.X - o.X, oz = b.Z - o.Z, od = Math.hypot(ox, oz); if (od < 0.22) { const u = od || 1, push = 0.22 - od; b.X += (ox / u) * push * 0.6 + (od ? 0 : 0.06); b.Z += (oz / u) * push * 0.6; } } });
+          const d2 = Math.hypot(b.X - WORLD.binX, b.Z - L.z); if (d2 > r) { b.X = WORLD.binX + (b.X - WORLD.binX) * r / d2; b.Z = L.z + (b.Z - L.z) * r / d2; }
+          this.binList.push({ X: b.X, Y: rest, Z: b.Z, rot: b.rot }); this.binBalls++; this.audio.thud(0.5); break;
+        }
       } else if (b.Y <= WORLD.ballR) {
         b.Y = WORLD.ballR;
         if (b.vy < -0.7) { b.bounces++; this.audio.thud(Math.min(1, -b.vy / 3)); }
@@ -197,8 +203,7 @@ export class Game {
   drawBin(z) {
     const st = this.stage, c = st.ctx, b = this.ball;
     st.binBack(z, (geom) => {
-      const n = this.binBalls;
-      for (let i = 0; i < n; i++) { const col = i % 3, row = Math.floor(i / 3); const x = geom.top.x + (col - 1) * geom.rx * 0.5, y = geom.top.y - geom.ry * (0.05 + row * 0.35); Paper.drawBall(c, x, y, WORLD.ballR * geom.k * 0.95, i * 1.7, false); }
+      [...this.binList].sort((p, q) => q.Z - p.Z || q.Y - p.Y).forEach((e) => { const p = st.proj(e.X, e.Y, e.Z); Paper.drawBall(c, p.x, p.y, WORLD.ballR * p.k, e.rot, false); });
       if (b && b.sunk && !b.done) { const p = st.proj(b.X, b.Y, b.Z); Paper.drawBall(c, p.x, p.y, WORLD.ballR * p.k, b.rot, false); }
     });
     st.binFront(z);

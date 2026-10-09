@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Paper Toss</title>
 <meta name="description" content="Crush a sheet of paper and toss it into the bin. A webcam game that follows your hand, right in the browser.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M14 22h36l-4 34H18z' fill='%235a669f'/%3E%3Cellipse cx='32' cy='22' rx='18' ry='6' fill='%23e6eafb'/%3E%3Cellipse cx='32' cy='22' rx='14' ry='4' fill='%23161b3b'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="style.css?v=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M14 22h36l-4 34H18z' fill='%23cfdcff' stroke='%238a99d6' stroke-width='3'/%3E%3Cellipse cx='32' cy='22' rx='18' ry='6' fill='none' stroke='%238a99d6' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css?v=2">
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 </head>
 <body>
@@ -21,7 +21,7 @@
 <section id="landing" class="screen active">
   <div class="card glass hero">
     <div class="logo" aria-hidden="true">
-      <svg viewBox="0 0 64 64" width="44" height="44"><path d="M14 24h36l-4 32H18z" fill="#5a669f"/><path d="M20 24l3 32M32 24v32M44 24l-3 32" stroke="#fff" stroke-opacity=".25" stroke-width="2"/><ellipse cx="32" cy="24" rx="18" ry="6" fill="#e6eafb"/><ellipse cx="32" cy="24" rx="14" ry="4" fill="#161b3b"/><circle cx="26" cy="18" r="6" fill="#fff" stroke="#9aa5d8" stroke-width="1.5"/></svg>
+      <svg viewBox="0 0 64 64" width="44" height="44"><defs><linearGradient id="gl" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".5" stop-color="#bcd0ff" stop-opacity=".25"/><stop offset="1" stop-color="#fff" stop-opacity=".8"/></linearGradient></defs><path d="M14 24h36l-4 32H18z" fill="url(#gl)" stroke="#8a99d6" stroke-width="2" stroke-linejoin="round"/><ellipse cx="32" cy="24" rx="18" ry="6" fill="none" stroke="#8a99d6" stroke-width="2"/><circle cx="32" cy="48" r="6" fill="#fff" stroke="#9aa5d8" stroke-width="1.5"/><path d="M20 30l2 20" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/></svg>
     </div>
     <h1>Paper Toss</h1>
     <p class="lead">Pick up a sheet, crush it in your fist and toss it into the bin. Your webcam follows your hand.</p>
@@ -138,6 +138,6 @@
   </div>
 </section>
 
-<script type="module" src="js/main.js?v=1"></script>
+<script type="module" src="js/main.js?v=2"></script>
 </body>
 </html>

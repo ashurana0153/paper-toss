@@ -14,11 +14,12 @@ function prep(cv) {
   return { c, w, h };
 }
 function bin(c, x, y, s) {
-  c.fillStyle = '#5a669f'; c.beginPath(); c.moveTo(x - s, y - s * 0.9); c.lineTo(x + s, y - s * 0.9); c.lineTo(x + s * 0.78, y + s * 0.5); c.lineTo(x - s * 0.78, y + s * 0.5); c.closePath(); c.fill();
-  c.fillStyle = '#161b3b'; c.beginPath(); c.ellipse(x, y - s * 0.9, s, s * 0.28, 0, 0, 6.28); c.fill();
-  c.strokeStyle = '#e6eafb'; c.lineWidth = 3; c.stroke();
+  const g = c.createLinearGradient(x - s, 0, x + s, 0);
+  g.addColorStop(0, 'rgba(255,255,255,0.6)'); g.addColorStop(0.2, 'rgba(210,225,255,0.2)'); g.addColorStop(0.5, 'rgba(190,210,255,0.08)'); g.addColorStop(1, 'rgba(255,255,255,0.5)');
+  c.beginPath(); c.moveTo(x - s, y - s * 0.9); c.lineTo(x - s * 0.78, y + s * 0.5); c.ellipse(x, y + s * 0.5, s * 0.78, s * 0.2, 0, Math.PI, 0, true); c.lineTo(x + s, y - s * 0.9); c.ellipse(x, y - s * 0.9, s, s * 0.28, 0, 0, Math.PI, false); c.closePath();
+  c.fillStyle = g; c.fill(); c.strokeStyle = 'rgba(255,255,255,0.85)'; c.lineWidth = 2; c.stroke();
+  c.beginPath(); c.ellipse(x, y - s * 0.9, s, s * 0.28, 0, Math.PI, 6.2832); c.strokeStyle = 'rgba(255,255,255,0.7)'; c.stroke();
 }
-
 const DEMOS = {
   pick(c, w, h, t) {
     const T = 3.8, u = (t % T), size = h * 0.17, px = w * 0.7, py = h * 0.74, pw = w * 0.3;
